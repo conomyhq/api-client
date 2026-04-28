@@ -2,7 +2,7 @@ import type {
   Account,
   AccountId,
   PaginatedResponse,
-} from '@conomyhq/types';
+} from '@conomyhq/core';
 import type { Transport } from '../transport';
 
 /**
@@ -51,14 +51,14 @@ export class AccountsModule {
     });
   }
 
-  update(id: AccountId, input: Record<string, unknown>): Promise<Account> {
+  update(id: AccountId, input: unknown): Promise<Account> {
     return this.transport.request<Account>(`/accounts/${id}`, {
       method: 'PATCH',
       body: input,
     });
   }
 
-  create(input: Record<string, unknown>): Promise<Account> {
+  create(input: unknown): Promise<Account> {
     return this.transport.request<Account>('/accounts', {
       method: 'POST',
       body: input,

@@ -1,4 +1,4 @@
-import type { Customer, CustomerId } from '@conomyhq/types';
+import type { Customer, CustomerId } from '@conomyhq/core';
 import type { Transport } from '../transport';
 
 /**
@@ -8,7 +8,7 @@ import type { Transport } from '../transport';
  * (presign → upload → approve / reject) so call sites read like the
  * domain: `api.customers.documents.approve(...)`.
  *
- * `ListCustomersResponse` is not exported by `@conomyhq/types` yet, so
+ * `ListCustomersResponse` is not exported by `@conomyhq/core` yet, so
  * we declare the shape locally to keep the module self-contained.
  */
 export interface ListCustomersResponse {
@@ -30,7 +30,7 @@ export class CustomerDocumentsModule {
   presign(
     customerId: CustomerId,
     clientId: string,
-    input: Record<string, unknown>,
+    input: unknown,
   ): Promise<unknown> {
     return this.transport.request<unknown>(
       `/customers/${encodeURIComponent(customerId)}/documents/presign`,
@@ -41,7 +41,7 @@ export class CustomerDocumentsModule {
   upload(
     customerId: CustomerId,
     clientId: string,
-    input: Record<string, unknown>,
+    input: unknown,
   ): Promise<unknown> {
     return this.transport.request<unknown>(
       `/customers/${encodeURIComponent(customerId)}/documents`,
@@ -98,7 +98,7 @@ export class CustomersModule {
 
   create(
     clientId: string,
-    input: Record<string, unknown>,
+    input: unknown,
   ): Promise<Customer> {
     return this.transport.request<Customer>('/customers', {
       method: 'POST',
@@ -110,7 +110,7 @@ export class CustomersModule {
   update(
     id: CustomerId,
     clientId: string,
-    input: Record<string, unknown>,
+    input: unknown,
   ): Promise<Customer> {
     return this.transport.request<Customer>(
       `/customers/${encodeURIComponent(id)}`,

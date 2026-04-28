@@ -3,7 +3,7 @@ import {
   NetworkError,
   type ApiError,
   type ApiErrorBody,
-} from '@conomyhq/types/errors';
+} from '@conomyhq/core/errors';
 
 /**
  * Configuration accepted by `createApiClient`. Everything is injected

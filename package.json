@@ -1,7 +1,7 @@
 {
   "name": "@conomyhq/api-client",
-  "version": "0.2.0",
-  "description": "Cliente HTTP tipado para el API Gateway de Conomy. Wrapper sobre fetch con auth Bearer, normalización de errores, y módulos por dominio (payments, accounts, customers, identities, …). Consumible desde cualquier app TS — wallet, ops-dashboard, BFFs Node, RN. Depende de @conomyhq/types para entidades y errores.",
+  "version": "0.3.0",
+  "description": "Cliente HTTP tipado para el API Gateway de Conomy. Wrapper sobre fetch con auth Bearer, normalización de errores, y módulos por dominio (payments, accounts, customers, identities, …). Consumible desde cualquier app TS — wallet, ops-dashboard, BFFs Node, RN. Depende de @conomyhq/core para entidades y errores.",
   "license": "UNLICENSED",
   "private": false,
   "type": "module",
@@ -13,6 +13,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./domains/accounts": {
+      "types": "./dist/domains/accounts/index.d.ts",
+      "import": "./dist/domains/accounts/index.js",
+      "require": "./dist/domains/accounts/index.cjs"
+    },
+    "./domains/customers": {
+      "types": "./dist/domains/customers/index.d.ts",
+      "import": "./dist/domains/customers/index.js",
+      "require": "./dist/domains/customers/index.cjs"
+    },
+    "./domains/geo-distribution": {
+      "types": "./dist/domains/geo-distribution/index.d.ts",
+      "import": "./dist/domains/geo-distribution/index.js",
+      "require": "./dist/domains/geo-distribution/index.cjs"
+    },
+    "./domains/identities": {
+      "types": "./dist/domains/identities/index.d.ts",
+      "import": "./dist/domains/identities/index.js",
+      "require": "./dist/domains/identities/index.cjs"
+    },
+    "./domains/payments": {
+      "types": "./dist/domains/payments/index.d.ts",
+      "import": "./dist/domains/payments/index.js",
+      "require": "./dist/domains/payments/index.cjs"
     }
   },
   "files": [
@@ -25,10 +50,10 @@
     "prepare": "tsup"
   },
   "peerDependencies": {
-    "@conomyhq/types": "*"
+    "@conomyhq/core": "*"
   },
   "dependencies": {
-    "@conomyhq/types": "*"
+    "@conomyhq/core": "file:../conomyhq-core"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

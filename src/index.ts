@@ -16,7 +16,7 @@
  *     const payments = await api.payments.list({ identityId, limit: 50 });
  *     const detail   = await api.payments.get(asPaymentId('abc'));
  *
- * Errors are typed via `@conomyhq/types/errors` — every thrown value is
+ * Errors are typed via `@conomyhq/core/errors` — every thrown value is
  * an `ApiError` subclass, so callers can switch on `instanceof
  * NotFoundError`, `instanceof ValidationError`, etc.
  *
@@ -34,11 +34,19 @@ import { Transport } from './transport';
 import { PaymentsModule } from './modules/payments';
 import { AccountsModule } from './modules/accounts';
 import { CustomersModule } from './modules/customers';
+import { IdentitiesModule } from './modules/identities';
+import { PaymentLinksModule } from './modules/paymentLinks';
+import { FxModule } from './modules/fx';
+import { GeoDistributionModule } from './modules/geoDistribution';
 
 export interface ApiClient {
   payments: PaymentsModule;
   accounts: AccountsModule;
   customers: CustomersModule;
+  identities: IdentitiesModule;
+  paymentLinks: PaymentLinksModule;
+  fx: FxModule;
+  geoDistribution: GeoDistributionModule;
   /** Escape hatch — direct access to the transport for endpoints not yet
    *  modeled by a typed module. Prefer module methods when available. */
   transport: Transport;
@@ -50,6 +58,10 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     payments: new PaymentsModule(transport),
     accounts: new AccountsModule(transport),
     customers: new CustomersModule(transport),
+    identities: new IdentitiesModule(transport),
+    paymentLinks: new PaymentLinksModule(transport),
+    fx: new FxModule(transport),
+    geoDistribution: new GeoDistributionModule(transport),
     transport,
   };
 }
@@ -67,4 +79,4 @@ export {
   ServerError,
   NetworkError,
   classifyHttpError,
-} from '@conomyhq/types/errors';
+} from '@conomyhq/core/errors';

@@ -1,10 +1,17 @@
 import type {
   PaginatedResponse,
   Payment,
+  PaymentCurrencies,
   PaymentId,
+  PaymentOrigin,
   PaymentStatus,
   PaymentType,
-} from '@conomyhq/types';
+  WithdrawalProductBounds,
+} from '@conomyhq/core';
+import {
+  getWithdrawalProductBoundsFromAvailableProducts,
+  type AvailablePaymentProductsResponse,
+} from '@conomyhq/core/domains/payments';
 import type { Transport } from '../transport';
 
 /**
@@ -28,12 +35,30 @@ export interface ListPaymentsOptions {
   sort?: string;
 }
 
+function toPaymentQuery(
+  opts: ListPaymentsOptions,
+): Record<string, string | number | boolean | undefined> {
+  return {
+    identityId: opts.identityId,
+    accountNumber: opts.accountNumber,
+    type: opts.type,
+    status: opts.status?.join(','),
+    startDate: opts.startDate,
+    endDate: opts.endDate,
+    paymentLinkId: opts.paymentLinkId,
+    currency: opts.currency,
+    limit: opts.limit,
+    offset: opts.offset,
+    sort: opts.sort,
+  };
+}
+
 export class PaymentsModule {
   constructor(private readonly transport: Transport) {}
 
   list(opts: ListPaymentsOptions = {}): Promise<PaginatedResponse<Payment>> {
     return this.transport.request<PaginatedResponse<Payment>>('/payments', {
-      query: opts as Record<string, never>, // narrows to the transport's query shape
+      query: toPaymentQuery(opts),
     });
   }
 
@@ -41,11 +66,19 @@ export class PaymentsModule {
     return this.transport.request<Payment>(`/payments/${id}`);
   }
 
-  create(input: Record<string, unknown>): Promise<Payment> {
+  create(input: unknown): Promise<Payment> {
     return this.transport.request<Payment>('/payments', {
       method: 'POST',
       body: input,
     });
+  }
+
+  createWithdrawal(input: unknown): Promise<Payment> {
+    return this.create(input);
+  }
+
+  createP2P(input: unknown): Promise<Payment> {
+    return this.create(input);
   }
 
   capture(id: PaymentId): Promise<Payment> {
@@ -53,5 +86,41 @@ export class PaymentsModule {
       method: 'POST',
       body: {},
     });
+  }
+
+  origins(accountNumber?: string): Promise<PaymentOrigin[]> {
+    return this.transport.request<PaymentOrigin[]>('/payment-origins', {
+      query: { accountNumber: accountNumber ?? '' },
+    });
+  }
+
+  currencies(identityId: string): Promise<PaymentCurrencies> {
+    return this.transport.request<PaymentCurrencies>('/payments/currencies', {
+      query: { identityId },
+    });
+  }
+
+  banks(country: string): Promise<unknown[]> {
+    return this.transport
+      .request<unknown>(`/payments/banks/${encodeURIComponent(country)}`)
+      .then((data) => (Array.isArray(data) ? data : [data]));
+  }
+
+  availableProducts(
+    identityId: string,
+    currency: string,
+  ): Promise<AvailablePaymentProductsResponse> {
+    return this.transport.request<AvailablePaymentProductsResponse>(
+      '/payments/available-products',
+      { query: { identityId, currency } },
+    );
+  }
+
+  async getWithdrawalProductBounds(
+    identityId: string,
+    currency: string,
+  ): Promise<WithdrawalProductBounds> {
+    const products = await this.availableProducts(identityId, currency);
+    return getWithdrawalProductBoundsFromAvailableProducts(products, currency);
   }
 }

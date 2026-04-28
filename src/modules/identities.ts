@@ -4,7 +4,7 @@ import type {
   IdentityType,
   PaginatedResponse,
   WithdrawalAccount,
-} from '@conomyhq/types';
+} from '@conomyhq/core';
 import type { Transport } from '../transport';
 
 /**
@@ -66,14 +66,16 @@ export class IdentityWithdrawalAccountsModule {
   constructor(private readonly transport: Transport) {}
 
   list(id: IdentityId): Promise<WithdrawalAccount[]> {
-    return this.transport.request<WithdrawalAccount[]>(
-      `/identities/${encodeURIComponent(id)}/withdrawal-accounts`,
-    );
+    return this.transport
+      .request<WithdrawalAccount[] | { withdrawalAccounts?: WithdrawalAccount[] }>(
+        `/identities/${encodeURIComponent(id)}/withdrawal-accounts`,
+      )
+      .then((data) => (Array.isArray(data) ? data : data.withdrawalAccounts ?? []));
   }
 
   create(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<WithdrawalAccount> {
     return this.transport.request<WithdrawalAccount>(
       `/identities/${encodeURIComponent(id)}/withdrawal-accounts`,
@@ -104,7 +106,7 @@ export class IdentitiesModule {
     );
   }
 
-  create(input: Record<string, unknown>): Promise<Identity> {
+  create(input: unknown): Promise<Identity> {
     return this.transport.request<Identity>('/identities', {
       method: 'POST',
       body: input,
@@ -119,7 +121,7 @@ export class IdentitiesModule {
     });
   }
 
-  update(id: IdentityId, input: Record<string, unknown>): Promise<Identity> {
+  update(id: IdentityId, input: unknown): Promise<Identity> {
     return this.transport.request<Identity>(
       `/identities/${encodeURIComponent(id)}`,
       { method: 'PATCH', body: input },
@@ -137,35 +139,35 @@ export class IdentitiesModule {
   // validation later without touching consumers).
   addBankAccount(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.update(id, data);
   }
 
   updateBankAccount(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.update(id, data);
   }
 
   updateUserInfo(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.update(id, data);
   }
 
   updateAddress(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.update(id, data);
   }
 
   deactivate(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.transport.request<Identity>(
       `/identities/${encodeURIComponent(id)}/deactivate`,
@@ -175,7 +177,7 @@ export class IdentitiesModule {
 
   reactivate(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.transport.request<Identity>(
       `/identities/${encodeURIComponent(id)}/reactivate`,
@@ -185,7 +187,7 @@ export class IdentitiesModule {
 
   addChildren(
     id: IdentityId,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<Identity> {
     return this.transport.request<Identity>(
       `/identities/${encodeURIComponent(id)}/children`,
