@@ -1,6 +1,6 @@
 {
   "name": "@conomyhq/api-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cliente HTTP tipado para el API Gateway de Conomy. Wrapper sobre fetch con auth Bearer, normalización de errores, y módulos por dominio (payments, accounts, customers, identities, …). Consumible desde cualquier app TS — wallet, ops-dashboard, BFFs Node, RN. Depende de @conomyhq/types para entidades y errores.",
   "license": "UNLICENSED",
   "private": false,
@@ -28,7 +28,7 @@
     "@conomyhq/types": "*"
   },
   "dependencies": {
-    "@conomyhq/types": "github:conomyhq/types"
+    "@conomyhq/types": "*"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

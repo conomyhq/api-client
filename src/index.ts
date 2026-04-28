@@ -32,9 +32,13 @@ export type { ApiClientConfig, RequestOptions } from './transport';
 import type { ApiClientConfig } from './transport';
 import { Transport } from './transport';
 import { PaymentsModule } from './modules/payments';
+import { AccountsModule } from './modules/accounts';
+import { CustomersModule } from './modules/customers';
 
 export interface ApiClient {
   payments: PaymentsModule;
+  accounts: AccountsModule;
+  customers: CustomersModule;
   /** Escape hatch — direct access to the transport for endpoints not yet
    *  modeled by a typed module. Prefer module methods when available. */
   transport: Transport;
@@ -44,6 +48,8 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
   const transport = new Transport(config);
   return {
     payments: new PaymentsModule(transport),
+    accounts: new AccountsModule(transport),
+    customers: new CustomersModule(transport),
     transport,
   };
 }
