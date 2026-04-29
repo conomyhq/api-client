@@ -62,6 +62,33 @@ export class IdentityPermissionsModule {
   }
 }
 
+/**
+ * Identity-scoped accounts operations. Today the only modeled call
+ * is `escrowFee` — `POST /identities/{id}/accounts/escrow-fee` —
+ * which idempotently ensures ESCROW + FEE accounts exist for the
+ * given identity for each requested currency. Used by checkout's
+ * getCurrencies flow when a new currency shows up for an identity.
+ *
+ * Path used to live at `/internal/identities/{id}/escrow-fee`; it
+ * was moved here because the artifacts created are accounts (not
+ * identities). Auth + body shape unchanged.
+ */
+export class IdentityAccountsModule {
+  constructor(private readonly transport: Transport) {}
+
+  /** Ensure ESCROW + FEE accounts exist for the given identity for
+   *  each currency. Returns 204 No Content; the response is empty. */
+  escrowFee(
+    id: IdentityId,
+    currencies: string[],
+  ): Promise<void> {
+    return this.transport.request<void>(
+      `/identities/${encodeURIComponent(id)}/accounts/escrow-fee`,
+      { method: 'POST', body: { currencies } },
+    );
+  }
+}
+
 export class IdentityWithdrawalAccountsModule {
   constructor(private readonly transport: Transport) {}
 
@@ -94,10 +121,12 @@ export class IdentityWithdrawalAccountsModule {
 export class IdentitiesModule {
   readonly permissions: IdentityPermissionsModule;
   readonly withdrawalAccounts: IdentityWithdrawalAccountsModule;
+  readonly accounts: IdentityAccountsModule;
 
   constructor(private readonly transport: Transport) {
     this.permissions = new IdentityPermissionsModule(transport);
     this.withdrawalAccounts = new IdentityWithdrawalAccountsModule(transport);
+    this.accounts = new IdentityAccountsModule(transport);
   }
 
   get(id: IdentityId): Promise<Identity> {

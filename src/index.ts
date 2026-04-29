@@ -38,6 +38,12 @@ import { IdentitiesModule } from './modules/identities';
 import { PaymentLinksModule } from './modules/paymentLinks';
 import { FxModule } from './modules/fx';
 import { GeoDistributionModule } from './modules/geoDistribution';
+import { ClientsModule } from './modules/clients';
+import { OnboardingModule } from './modules/onboarding';
+import { CasesModule } from './modules/cases';
+import { TreasuryModule } from './modules/treasury';
+import { ReportsModule } from './modules/reports';
+import { TransactionWebhooksModule } from './modules/transactionWebhooks';
 
 export interface ApiClient {
   payments: PaymentsModule;
@@ -47,6 +53,18 @@ export interface ApiClient {
   paymentLinks: PaymentLinksModule;
   fx: FxModule;
   geoDistribution: GeoDistributionModule;
+  /** Operator-side clients bootstrap (POST /clients/{id}/onboarding). */
+  clients: ClientsModule;
+  /** Onboarding applications (operator + prospect token-auth). */
+  onboarding: OnboardingModule;
+  /** Operator dashboard cases / tickets (F9). */
+  cases: CasesModule;
+  /** Treasury — balances, history, identityBalances, adjustments (F7). */
+  treasury: TreasuryModule;
+  /** Async CSV exports (F11). */
+  reports: ReportsModule;
+  /** Transaction webhook listing (composition with checkout). */
+  transactionWebhooks: TransactionWebhooksModule;
   /** Escape hatch — direct access to the transport for endpoints not yet
    *  modeled by a typed module. Prefer module methods when available. */
   transport: Transport;
@@ -62,6 +80,12 @@ export function createApiClient(config: ApiClientConfig): ApiClient {
     paymentLinks: new PaymentLinksModule(transport),
     fx: new FxModule(transport),
     geoDistribution: new GeoDistributionModule(transport),
+    clients: new ClientsModule(transport),
+    onboarding: new OnboardingModule(transport),
+    cases: new CasesModule(transport),
+    treasury: new TreasuryModule(transport),
+    reports: new ReportsModule(transport),
+    transactionWebhooks: new TransactionWebhooksModule(transport),
     transport,
   };
 }
