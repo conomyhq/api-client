@@ -50,10 +50,12 @@
     "prepare": "tsup"
   },
   "peerDependencies": {
-    "@conomyhq/core": "*"
+    "@conomyhq/core": "*",
+    "@conomyhq/types": "*"
   },
   "dependencies": {
-    "@conomyhq/core": "github:conomyhq/core"
+    "@conomyhq/core": "file:../conomyhq-core",
+    "@conomyhq/types": "file:../conomyhq-types"
   },
   "devDependencies": {
     "tsup": "^8.3.5",
