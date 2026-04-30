@@ -1,5 +1,4 @@
 import type {
-  ApproveOnboardingResponse,
   CreateOnboardingApplicationRequest,
   CreateOnboardingApplicationResponse,
   ListOnboardingApplicationsResponse,
@@ -14,7 +13,7 @@ import type {
   RejectOnboardingRequest,
   RequestChangesOnboardingRequest,
 } from '@conomyhq/core';
-import type { Transport } from '../transport';
+import { q, type Transport } from '../transport';
 
 /**
  * Onboarding applications — both sides of the F10 flow:
@@ -60,7 +59,7 @@ export class OnboardingApplicationsModule {
   ): Promise<ListOnboardingApplicationsResponse> {
     return this.transport.request<ListOnboardingApplicationsResponse>(
       '/onboarding-applications',
-      { query: opts as Record<string, never> },
+      { query: q(opts) },
     );
   }
 
@@ -137,11 +136,14 @@ export class OnboardingApplicationsModule {
    *  success or APPROVE_FAILED with a populated `lastError` on
    *  failure (idempotent retry: re-call to continue from the last
    *  failed stage). */
+  /** POST /onboarding-applications/{id}/approve. Operations always
+   *  returns the updated `OnboardingApplication` (status APPROVED on
+   *  success, APPROVE_FAILED with `lastError` populated on failure). */
   approve(
     id: string,
     idempotencyKey: string,
-  ): Promise<ApproveOnboardingResponse | OnboardingApplication> {
-    return this.transport.request<ApproveOnboardingResponse | OnboardingApplication>(
+  ): Promise<OnboardingApplication> {
+    return this.transport.request<OnboardingApplication>(
       `/onboarding-applications/${encodeURIComponent(id)}/approve`,
       {
         method: 'POST',
@@ -218,40 +220,63 @@ export class OnboardingProspectModule {
     );
   }
 
+  /** Autosave-style update. Idempotency-Key required so a flaky
+   *  mobile retry doesn't double-apply the same patch. */
   patch(
     token: string,
     sections: ProspectOnboardingPatchRequest,
+    idempotencyKey: string,
   ): Promise<OnboardingApplication> {
     return this.transport.request<OnboardingApplication>(
       `/onboarding/${encodeURIComponent(token)}`,
-      { method: 'PATCH', body: sections },
+      {
+        method: 'PATCH',
+        body: sections,
+        headers: { 'Idempotency-Key': idempotencyKey },
+      },
     );
   }
 
-  submit(token: string): Promise<OnboardingApplication> {
+  /** Final submit moves the application to PENDING_REVIEW + burns
+   *  the token. Required Idempotency-Key prevents the
+   *  re-click-shows-error-but-actually-worked race. */
+  submit(token: string, idempotencyKey: string): Promise<OnboardingApplication> {
     return this.transport.request<OnboardingApplication>(
       `/onboarding/${encodeURIComponent(token)}/submit`,
-      { method: 'POST' },
+      {
+        method: 'POST',
+        headers: { 'Idempotency-Key': idempotencyKey },
+      },
     );
   }
 
   presignDocument(
     token: string,
     body: ProspectOnboardingDocumentPresignRequest,
+    idempotencyKey: string,
   ): Promise<OperationsPresignedUpload> {
     return this.transport.request<OperationsPresignedUpload>(
       `/onboarding/${encodeURIComponent(token)}/documents/presign`,
-      { method: 'POST', body },
+      {
+        method: 'POST',
+        body,
+        headers: { 'Idempotency-Key': idempotencyKey },
+      },
     );
   }
 
   commitDocument(
     token: string,
     body: ProspectOnboardingDocumentCommitRequest,
+    idempotencyKey: string,
   ): Promise<OnboardingApplication> {
     return this.transport.request<OnboardingApplication>(
       `/onboarding/${encodeURIComponent(token)}/documents`,
-      { method: 'POST', body },
+      {
+        method: 'POST',
+        body,
+        headers: { 'Idempotency-Key': idempotencyKey },
+      },
     );
   }
 

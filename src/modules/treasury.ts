@@ -1,11 +1,12 @@
 import type {
   TreasuryAdjustmentRequest,
+  TreasuryAdjustmentResponse,
   TreasuryBalance,
   TreasuryHistoryQuery,
   TreasuryHistoryRow,
   TreasuryIdentityBalancesResponse,
 } from '@conomyhq/core';
-import type { Transport } from '../transport';
+import { q, type Transport } from '../transport';
 
 /**
  * Treasury (F7) — balances + historical series + audited adjustments.
@@ -35,7 +36,7 @@ export class TreasuryIdentitiesModule {
   ): Promise<{ rows: TreasuryHistoryRow[] }> {
     return this.transport.request<{ rows: TreasuryHistoryRow[] }>(
       `/treasury/identities/${encodeURIComponent(identityId)}/history`,
-      { query: query as Record<string, never> },
+      { query: q(query) },
     );
   }
 }
@@ -52,15 +53,18 @@ export class TreasuryModule {
   ): Promise<TreasuryIdentityBalancesResponse> {
     return this.transport.request<TreasuryIdentityBalancesResponse>(
       '/treasury/identityBalances',
-      { query: query as Record<string, never> },
+      { query: q(query) },
     );
   }
 
+  /** Audited balance change. Operations forwards through accounts
+   *  AddBalance and returns the resulting account snapshot + the
+   *  echoed audit-trail fields. */
   adjustment(
     body: TreasuryAdjustmentRequest,
     idempotencyKey: string,
-  ): Promise<unknown> {
-    return this.transport.request<unknown>('/treasury/adjustments', {
+  ): Promise<TreasuryAdjustmentResponse> {
+    return this.transport.request<TreasuryAdjustmentResponse>('/treasury/adjustments', {
       method: 'POST',
       body,
       headers: { 'Idempotency-Key': idempotencyKey },

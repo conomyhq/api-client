@@ -25,17 +25,26 @@ export class ClientsModule {
   constructor(private readonly transport: Transport) {}
 
   /**
-   * Bootstrap a brand-new CLIENT identity tree.
+   * Bootstrap a brand-new CLIENT identity tree. The most destructive
+   * POST in the api-client surface — required Idempotency-Key so a
+   * re-tried call (network hiccup, retry button) does not duplicate
+   * the CLIENT + ESCROW + ORG + STAFF + accounts + rules side-effects.
    *
-   *   await api.clients.onboarding(clientId, { client, currencies, … });
+   *   const key = crypto.randomUUID();
+   *   await api.clients.onboarding(clientId, request, key);
    */
   onboarding(
     clientId: string,
     body: ClientOnboardingRequest,
+    idempotencyKey: string,
   ): Promise<ClientOnboardingResponse> {
     return this.transport.request<ClientOnboardingResponse>(
       `/clients/${encodeURIComponent(clientId)}/onboarding`,
-      { method: 'POST', body: { ...body, clientId: body.clientId ?? clientId } },
+      {
+        method: 'POST',
+        body: { ...body, clientId: body.clientId ?? clientId },
+        headers: { 'Idempotency-Key': idempotencyKey },
+      },
     );
   }
 }

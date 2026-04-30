@@ -1,4 +1,5 @@
 import type {
+  EnsureEscrowFeeRequest,
   Identity,
   IdentityId,
   IdentityType,
@@ -77,14 +78,16 @@ export class IdentityAccountsModule {
   constructor(private readonly transport: Transport) {}
 
   /** Ensure ESCROW + FEE accounts exist for the given identity for
-   *  each currency. Returns 204 No Content; the response is empty. */
+   *  each currency. Returns 204 No Content; the response is empty.
+   *  Body matches the EnsureEscrowFeeRequest contract — adding new
+   *  fields later is non-breaking on the wire. */
   escrowFee(
     id: IdentityId,
-    currencies: string[],
+    body: EnsureEscrowFeeRequest,
   ): Promise<void> {
     return this.transport.request<void>(
       `/identities/${encodeURIComponent(id)}/accounts/escrow-fee`,
-      { method: 'POST', body: { currencies } },
+      { method: 'POST', body },
     );
   }
 }

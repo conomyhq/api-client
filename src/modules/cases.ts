@@ -7,7 +7,7 @@ import type {
   OperationsPresignedUpload,
   PaginatedResponse,
 } from '@conomyhq/core';
-import type { Transport } from '../transport';
+import { q, type Transport } from '../transport';
 
 /**
  * Cases (operator dashboard tickets, F9). The operations service is
@@ -122,7 +122,7 @@ export class CasesModule {
   list(opts: ListCasesOptions = {}): Promise<PaginatedResponse<CaseRecord> | CaseRecord[]> {
     return this.transport.request<PaginatedResponse<CaseRecord> | CaseRecord[]>(
       '/cases',
-      { query: opts as Record<string, never> },
+      { query: q(opts) },
     );
   }
 

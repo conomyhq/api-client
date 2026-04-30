@@ -2,7 +2,7 @@ import type {
   TransactionWebhookFilters,
   TransactionWebhookListResponse,
 } from '@conomyhq/core';
-import type { Transport } from '../transport';
+import { q, type Transport } from '../transport';
 
 /**
  * Transaction webhooks composition. Operations forwards the listing
@@ -18,7 +18,7 @@ export class TransactionWebhooksModule {
   ): Promise<TransactionWebhookListResponse> {
     return this.transport.request<TransactionWebhookListResponse>(
       '/transaction-webhooks',
-      { query: filters as Record<string, never> },
+      { query: q(filters) },
     );
   }
 }

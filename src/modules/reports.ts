@@ -1,9 +1,8 @@
 import type {
   CreateOperationsReportRequest,
-  ListOperationsReportsResponse,
   OperationsReportRun,
 } from '@conomyhq/core';
-import type { Transport } from '../transport';
+import { q, type Transport } from '../transport';
 
 /**
  * Operations reports (F11) — async CSV exports. Today the handler runs
@@ -29,11 +28,17 @@ export class ReportsModule {
     });
   }
 
+  /** Operations returns `{rows, next}` today (mirrors the cases /
+   *  treasury list pattern). The conomyhq-types
+   *  `ListOperationsReportsResponse` uses `{count, runs, nextCursor}`
+   *  for the dashboard's older shape — we expose the wire shape
+   *  operations actually emits and let callers map if they need the
+   *  paginated form. */
   list(
     opts: ListReportsOptions = {},
-  ): Promise<ListOperationsReportsResponse | { rows: OperationsReportRun[]; next?: string }> {
-    return this.transport.request('/reports', {
-      query: opts as Record<string, never>,
+  ): Promise<{ rows: OperationsReportRun[]; next?: string }> {
+    return this.transport.request<{ rows: OperationsReportRun[]; next?: string }>('/reports', {
+      query: q(opts),
     });
   }
 

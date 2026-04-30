@@ -52,13 +52,41 @@ export interface ApiClientConfig {
   userAgent?: string;
 }
 
+/**
+ * Acceptable values for a single query-string entry. We intentionally
+ * accept any non-object scalar plus arrays of scalars — `buildQueryString`
+ * normalizes via `String(value)`. The previous narrow union forced
+ * every module to cast its option object to `Record<string, never>`,
+ * which silently disabled type-checking on query params; a single
+ * resource-shaped option object now satisfies the contract directly.
+ */
+export type QueryValue =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | ReadonlyArray<string | number | boolean>;
+
+/**
+ * Loose query-string shape — any string-keyed bag of QueryValues.
+ *
+ * NOTE: TypeScript does not add an implicit index signature to
+ * declared interfaces, so passing an interface-shaped option object
+ * (e.g. `TreasuryHistoryQuery`) requires a one-line cast to
+ * `QueryParams`. The cast is honest (the value type is exactly
+ * `QueryValue`); the previous `Record<string, never>` form was the
+ * misleading version that lied about the shape having no keys.
+ */
+export type QueryParams = Record<string, QueryValue>;
+
 export interface RequestOptions {
   /** HTTP method. Default: 'GET'. */
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   /** JSON body — stringified automatically. */
   body?: unknown;
   /** Query params — `null` / `undefined` values are dropped. */
-  query?: Record<string, string | number | boolean | null | undefined | string[]>;
+  query?: QueryParams;
   /** Skip the Bearer header (for the rare unauthenticated endpoint). */
   skipAuth?: boolean;
   /** AbortSignal forwarded to fetch. */
@@ -69,7 +97,26 @@ export interface RequestOptions {
   headers?: Record<string, string>;
 }
 
-function buildQueryString(query: RequestOptions['query']): string {
+/**
+ * `q` is a tiny ergonomics helper for module call sites: it bridges a
+ * resource-shaped option object to the loose QueryParams shape the
+ * transport expects. TypeScript does not give declared interfaces an
+ * implicit string index signature, so without this helper every
+ * module needs an `as unknown as QueryParams` cast — `q(opts)` reads
+ * cleaner.
+ *
+ * The runtime is unchanged: `buildQueryString` iterates entries,
+ * drops null/undefined and stringifies the rest. The compile-time
+ * surface stays correct because each module's own option type
+ * documents exactly what's accepted before we hit `q`.
+ *
+ *   this.transport.request(url, { query: q(opts) })
+ */
+export function q(opts: object | undefined): QueryParams | undefined {
+  return opts as QueryParams | undefined;
+}
+
+function buildQueryString(query: QueryParams | undefined): string {
   if (!query) return '';
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
